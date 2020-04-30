@@ -30,7 +30,7 @@ public class Rocket : MonoBehaviour
  
     }
 
-        private void Thrust()
+    private void Thrust()
     {
         if (Input.GetKey(KeyCode.Space))
         {
@@ -93,6 +93,23 @@ public class Rocket : MonoBehaviour
         rigidbody.freezeRotation = false;
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        switch (collision.gameObject.tag)
+        {
+            case "Friendly":
+                {
+                    print("Friendly");
+                    break;
+                }
 
+            default:
+                {
+                    print("dead");
+                    break;
+                }
+
+        }
+    }
 
 }
