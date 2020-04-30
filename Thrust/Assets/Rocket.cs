@@ -8,12 +8,15 @@ public class Rocket : MonoBehaviour
     Rigidbody rigidbody;
     AudioSource audio;
 
+    bool isTurning;
+    float deltaRotation;
 
-    public float thrustforce;
-    public float turnSpeed;
+    [SerializeField] float thrustforce;
+    [SerializeField] float turnSpeed;
     // Start is called before the first frame update
     void Start()
     {
+        float deltaRotation = 0;
         rigidbody = GetComponent<Rigidbody>();
         audio = GetComponent<AudioSource>();
 
@@ -22,29 +25,13 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ProcessInput();
-
+        Thrust();
+        Rotate();
+ 
     }
 
-    private void ProcessInput()
+        private void Thrust()
     {
-        if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D))
-        {
-          //  print("can't turn both ways");
-
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            // print("right");
-            transform.Rotate(turnSpeed * Time.deltaTime * Vector3.back);
-        }
-        else if (Input.GetKey(KeyCode.A))
-        {
-            //print("left");
-            transform.Rotate(turnSpeed * Time.deltaTime * Vector3.forward);
-        }
-
-
         if (Input.GetKey(KeyCode.Space))
         {
             rigidbody.AddRelativeForce(thrustforce * Time.deltaTime * Vector3.up);
@@ -56,7 +43,56 @@ public class Rocket : MonoBehaviour
         {
             audio.Stop();
         }
-
     }
+
+    private void Rotate()
+    {
+        rigidbody.freezeRotation = true;
+
+
+
+        if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D))
+        {
+            //  print("can't turn both ways");
+            deltaRotation = 0;
+
+
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            // print("right");
+            deltaRotation += turnSpeed * Time.deltaTime;
+            transform.Rotate(turnSpeed * Time.deltaTime * Vector3.back);
+         //   print(deltaRotation);
+            if (deltaRotation >= 360)
+            {
+                print("Nice Flip!");
+                deltaRotation = 0;
+            }
+
+        }
+        else if (Input.GetKey(KeyCode.A))
+        {
+            //print("left");
+            deltaRotation += turnSpeed * Time.deltaTime;
+            transform.Rotate(turnSpeed * Time.deltaTime * Vector3.forward);
+            //  print(deltaRotation);
+
+            if (deltaRotation >= 360)
+            {
+                print("Nice Flip!");
+                deltaRotation = 0;
+            }
+
+        }
+        else
+        {
+            deltaRotation = 0;
+        }
+        isTurning = false;
+        rigidbody.freezeRotation = false;
+    }
+
+
 
 }
