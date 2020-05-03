@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour
 {
@@ -13,6 +14,13 @@ public class Rocket : MonoBehaviour
 
     [SerializeField] float thrustforce;
     [SerializeField] float turnSpeed;
+
+
+    enum State { alive, dying, transcending};
+    State playerState = State.alive;
+
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,14 +33,16 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (playerState.Equals(State.alive))
+        {
+            Rotate();
+        }
         Thrust();
-        Rotate();
- 
     }
 
     private void Thrust()
     {
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space) && playerState.Equals(State.alive))
         {
             rigidbody.AddRelativeForce(thrustforce * Time.deltaTime * Vector3.up);
             //print("Thrusting");
@@ -95,6 +105,10 @@ public class Rocket : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+
+        if (playerState != State.alive)
+            return;
+
         switch (collision.gameObject.tag)
         {
             case "Friendly":
@@ -102,14 +116,29 @@ public class Rocket : MonoBehaviour
                     print("Friendly");
                     break;
                 }
-
+            case "Finish":
+                {
+                    playerState = State.transcending;
+                    Invoke("LoadNextLevel", 1f);
+                    break;
+                }
             default:
                 {
-                    print("dead");
+                    playerState = State.dying;
+                    Invoke("Restart", 1f);
                     break;
                 }
 
         }
     }
 
+    private void Restart()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    private void LoadNextLevel()
+    {
+        SceneManager.LoadScene(1);
+    }
 }
