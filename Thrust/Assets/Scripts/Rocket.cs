@@ -26,7 +26,7 @@ public class Rocket : MonoBehaviour
 
 
 
-    enum State { alive, dying, transcending};
+    enum State { alive, dying, transcending, debug};
     State playerState = State.alive;
 
 
@@ -43,17 +43,46 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (playerState.Equals(State.alive))
+        if (playerState.Equals(State.alive) || playerState.Equals(State.debug))
         {
             Rotate();
             Thrust();
 
         }
+        if (Debug.isDebugBuild)
+        {
+            RespondToDebug();
+
+        }
+
+    }
+
+    private void RespondToDebug()
+    {
+        if (Input.GetKey(KeyCode.L))
+        {
+            LoadNextLevel();
+
+        }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (playerState.Equals(State.debug))
+            {
+                playerState = State.alive;
+                print("Debug mode OFF");
+
+            }
+            else
+            {
+                playerState = State.debug;
+                print("Debug mode ON");
+            }
+        }
     }
 
     private void Thrust()
     {
-        if (Input.GetKey(KeyCode.Space) && playerState.Equals(State.alive))
+        if (Input.GetKey(KeyCode.Space))
         {
             rigidbody.AddRelativeForce(thrustforce * Time.deltaTime * Vector3.up);
             //print("Thrusting");
@@ -169,6 +198,7 @@ public class Rocket : MonoBehaviour
 
     private void LoadNextLevel()
     {
-        SceneManager.LoadScene(1);
+        int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
+        SceneManager.LoadScene(nextScene % SceneManager.sceneCountInBuildSettings);
     }
 }
