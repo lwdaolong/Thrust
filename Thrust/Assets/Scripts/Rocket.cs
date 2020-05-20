@@ -14,6 +14,16 @@ public class Rocket : MonoBehaviour
 
     [SerializeField] float thrustforce;
     [SerializeField] float turnSpeed;
+    [SerializeField] AudioClip mainEngine;
+    [SerializeField] AudioClip deathSound;
+    [SerializeField] AudioClip winSound;
+
+    [SerializeField] ParticleSystem engineParticles;
+    [SerializeField] ParticleSystem deathParticles;
+    [SerializeField] ParticleSystem successParticles;
+
+    [SerializeField] float levelLoadDelay = 2f;
+
 
 
     enum State { alive, dying, transcending};
@@ -36,8 +46,9 @@ public class Rocket : MonoBehaviour
         if (playerState.Equals(State.alive))
         {
             Rotate();
+            Thrust();
+
         }
-        Thrust();
     }
 
     private void Thrust()
@@ -46,12 +57,15 @@ public class Rocket : MonoBehaviour
         {
             rigidbody.AddRelativeForce(thrustforce * Time.deltaTime * Vector3.up);
             //print("Thrusting");
+            engineParticles.Play();
+
             if (!audio.isPlaying)
-                audio.Play();
+                audio.PlayOneShot(mainEngine);
         }
         else
         {
             audio.Stop();
+            engineParticles.Stop();
         }
     }
 
@@ -118,18 +132,34 @@ public class Rocket : MonoBehaviour
                 }
             case "Finish":
                 {
-                    playerState = State.transcending;
-                    Invoke("LoadNextLevel", 1f);
+                    nextLevelSequence();
                     break;
                 }
             default:
                 {
-                    playerState = State.dying;
-                    Invoke("Restart", 1f);
+                    deathSequence();
                     break;
                 }
 
         }
+    }
+
+    private void deathSequence()
+    {
+        playerState = State.dying;
+        audio.Stop();
+        audio.PlayOneShot(deathSound);
+        deathParticles.Play();
+        Invoke("Restart",levelLoadDelay);
+    }
+
+    private void nextLevelSequence()
+    {
+        playerState = State.transcending;
+        audio.Stop();
+        audio.PlayOneShot(winSound);
+        successParticles.Play();
+        Invoke("LoadNextLevel", levelLoadDelay);
     }
 
     private void Restart()
